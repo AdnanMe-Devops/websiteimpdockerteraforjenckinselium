@@ -1,0 +1,338 @@
+2 docfile
+
+FROM nginx:alpine
+MAINTAINER adnan 
+
+<adnandaudzai@gmail.com>
+
+COPY website /website
+COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+
+---
+
+docker compose 
+version: '3.7'
+services:
+  website:
+   build:
+    context: .
+   ports:
+    - 80:80
+----------------
+3
+version: '3.7'
+services:
+  website:
+   build:
+    context: .
+   ports:
+    - 80:80
+------------
+
+FROM nginx:alpine
+MAINTAINER adnan 
+
+<adnandaudzai@gmail.com>
+
+COPY website /website
+COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+--------------------
+rspec
+FROM ruby:alpine
+MAINTAINER adnan 
+
+<adnandaudzai@gmail.com>
+
+RUN apk add --no-cache build-base ruby-
+
+nokogiri
+RUN gem install rspec capybara selenium-
+
+webdriver
+ENTRYPOINT [ "rspec" ]
+-----------------
+docker compose-new.yml
+
+version: '2.2'
+services:
+  aws:
+    image: anigeo/awscli
+    volumes:
+      - $PWD:/app
+    working_dir: /app
+    env_file: .env
+  terraform:
+    build:
+      dockerfile: terraform.Dockerfile
+      context: .
+    env_file: .env
+    volumes:
+      - $PWD:/app
+    working_dir: /app
+  selenium:
+    image: selenium/standalone-chrome-
+
+debug
+    ports:
+      - 4444:4444
+      - 5900:5900
+  integration-tests:
+    build:
+      dockerfile: rspec.dockerfile
+      context: .
+    environment:
+      SELENIUM_HOST: selenium
+      SELENIUM_PORT: 4444
+      WEBSITE_URL: http://doesnt.exist
+    volumes:
+      - $PWD:/app
+    entrypoint: rspec
+    command:
+      - --pattern
+      - /app/spec/integration/*_spec.rb
+  unit-tests:
+    build:
+      dockerfile: rspec.dockerfile
+      context: .
+    environment:
+      SELENIUM_HOST: selenium
+      SELENIUM_PORT: 4444
+    volumes:
+      - $PWD:/app
+    entrypoint: rspec
+    command:
+      - --pattern
+      - /app/spec/unit/*_spec.rb
+  website:
+    image: nginx:alpine
+    volumes:
+      - $PWD/website:/website
+      - 
+
+$PWD/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: ./jenkins/Dockerfile
+    volumes:
+    - /tmp/jenkins_home:/var/jenkins_home
+    - $PWD:/app
+    ports:
+      - 8080:8080
+  readme:
+    build:
+      dockerfile: readme.Dockerfile
+      context: .
+    working_dir: /app
+    volumes:
+      - $PWD:/app
+    ports:
+      - 80:6419
+    command:
+      - grip
+      - "0.0.0.0:6419"
+  view-doc:
+    extends: readme
+    command:
+      - grip
+      - ${PATH_TO_CONTENT}
+      - "0.0.0.0:6419"
+----------------------
+docker compose .yml
+version: '3.7'
+services:
+  selenium:
+    image: selenium/standalone-chrome-
+
+debug
+    ports:
+      - 4444:4444
+      - 5900:5900
+  website:
+   build:
+    context: .
+   ports:
+    - 80:80
+  unit-tests:
+    build:
+      dockerfile: rspec.dockerfile
+      context: .
+    environment:
+      SELENIUM_HOST: selenium
+      SELENIUM_PORT: 4444
+    volumes:
+      - $PWD:/app
+    entrypoint: rspec
+    command:
+      - --pattern
+      - /app/spec/unit/*_spec.rb
+----------------------------
+4 terraform.dockerfile 
+FROM alpine
+MAINTAINER adnan
+
+<adnandaudzai@gmail.com>
+RUN wget -O /tmp/terraform.zip 
+
+https://releases.hashicorp.com/terraform/
+
+0.12.9/terraform_0.12.9_linux_amd64.zip 
+
+&& \
+    unzip /tmp/terraform.zip -d /
+RUN apk add --no-cache ca-certificates 
+
+curl
+USER nobody
+ENTRYPOINT [ "/terraform" ]
+-------------------------------
+main.tft
+
+data "aws_iam_policy_document" 
+
+"bucket_policy" {
+  statement {
+    sid = "PublicReadGetObject"
+    effect = "Allow"
+    actions = [ "s3:GetObject" ]
+    principals {
+      type = "*"
+      identifiers = [ "*" ]
+    }
+    resources = [ 
+
+"arn:aws:s3:::explorecalifornia.org/*" ]
+  }
+}
+
+/* We can access properties from data 
+
+sources using this format:
+   
+
+${data.<data_source_type>.<data_source_na
+
+me>.<property>.
+
+   In this case, we need the JSON 
+
+document, which the documentation
+   says can be accessed from the .json 
+
+property. */
+
+resource "aws_s3_bucket" "website" {
+  bucket = "explorecalifornia.org"  // 
+
+The name of the bucket.
+  acl    = "public-read"            /* 
+
+Access control list for the bucket.
+                                       
+
+Websites need to be publicly-available
+                                       to 
+
+the Internet for website hosting to
+                                       
+
+work. */
+  policy = 
+
+"${data.aws_iam_policy_document.bucket_po
+
+licy.json}"
+  website {
+    index_document = "index.htm"   // The 
+
+root of the website.
+    error_document = "error.htm"   // The 
+
+page to show when people hit invalid 
+
+pages.
+  }
+}
+
+output "website_bucket_url" {
+  value = 
+
+"${aws_s3_bucket.website.website_endpoint
+
+}"
+}
+
+----------------------------
+jenkinfile 
+
+rspec.dockerfile
+FROM ruby:alpine
+MAINTAINER adnan 
+
+<adnandaudzai@gmail.com>
+
+RUN apk add --no-cache build-base ruby-
+
+nokogiri
+RUN gem install rspec capybara selenium-
+
+webdriver
+ENTRYPOINT [ "rspec" ]
+---------------------------
+jenkin dockerfile
+FROM jenkins/jenkins:alpine
+MAINTAINER Carlos Nunez 
+
+<dev@carlosnunez.me>
+
+COPY plugins.txt 
+
+/usr/share/jenkins/plugins.txt
+RUN /usr/local/bin/install-plugins.sh < 
+
+/usr/share/jenkins/plugins.txt
+
+EXPOSE 8080
+# EXPOSE 50000 # uncomment this line if 
+
+you want to attach slaves to this 
+
+container
+-----------------------
+PLUGIN
+workflow-aggregator
+seed
+git
+
+-----------------------------
+JENKINFILE
+pipeline {
+  agent any
+  stages {
+    stage('Build our website') {
+      steps {
+        sh "$PWD/scripts/build.sh"
+      }
+    }
+
+    stage('Run unit tests') {
+      steps {
+        sh "$PWD/scripts/unit_tests.sh"
+      }
+    }
+
+    stage('Deloy website') {
+      steps {
+        sh 
+
+"$PWD/scripts/deploy_website.sh"
+      }
+    }
+  }
+}
