@@ -1,0 +1,23 @@
+home brew
+sudo brew install docker
+docker build -tag website 
+docker run -p 80:80 website 
+localhost:8080
+docker-compose up
+docker-compose ps
+docker-compose -up -d website 
+docker-compose run -rm unit-test
+docker build -t terraform -f test dockerfile
+docker run  --rm -interactive --tty
+docker build --help
+docker build --tag terraform 
+docker run --help
+docker run -rm terraofrm -version 
+docker-comose run --rm terraform 
+docker up build terraform dockerfile 
+terraform compose -run -rm terraform init 
+docker compose build terraform 
+docker run rm terraform apply 
+docker compose rm -run output  
+ls -la
+terraform init,plan ,apply and destroy 
